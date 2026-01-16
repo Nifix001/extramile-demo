@@ -2,6 +2,8 @@
 
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, User, Phone } from 'lucide-react';
+import e from "../../public/emile.png"
+import Image from 'next/image';
 
 interface SignUpPageProps {
   onSignUp: (name: string, email: string, phone: string, password: string) => void;
@@ -42,10 +44,10 @@ export default function SignUpPage({ onSignUp, onSwitchToLogin }: SignUpPageProp
         {/* Header */}
         <div className="bg-gradient-to-r from-green-600 to-emerald-500 p-8 text-white text-center">
           <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center text-green-600 font-bold text-2xl mx-auto mb-4">
-            E
+            <Image src={e} alt='logo' width={50} height={50} />
           </div>
           <h1 className="text-2xl font-bold mb-2">Create Account</h1>
-          <p className="text-green-100">Join us and start shopping on credit</p>
+          <p className="text-green-100">Join us now</p>
         </div>
 
         {/* Form */}

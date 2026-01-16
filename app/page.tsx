@@ -16,6 +16,7 @@ import { Asset, PageType, ToastType } from '@/src/types';
 import SignUpPage from '@/src/components/SignUpPage';
 import NewsletterModal from '@/src/components/SignUpModal';
 import LoginPage from '@/src/components/LoginPage';
+import { seedCommunityPosts } from '@/src/utils/seedCommunity';
 
 type AuthPage = 'main' | 'login' | 'signup';
 
@@ -29,6 +30,9 @@ export default function Home() {
   const [toast, setToast] = useState<ToastType>({ show: false, message: '' });
 
   useEffect(() => {
+    // Seed community posts on first load
+    seedCommunityPosts();
+    
     // Check if user is already logged in (from localStorage)
     const savedUser = localStorage.getItem('extramile_user');
     if (savedUser) {
@@ -39,7 +43,7 @@ export default function Home() {
       // Show newsletter modal for unauthenticated users after 3 seconds
       const timer = setTimeout(() => {
         setShowNewsletterModal(true);
-      }, 5000);
+      }, 3000);
       return () => clearTimeout(timer);
     }
   }, []);
@@ -190,7 +194,10 @@ export default function Home() {
         )}
 
         {currentPage === 'community' && (
-          <CommunityPage posts={COMMUNITY_POSTS} />
+          <CommunityPage 
+            currentUserId={isAuth ? userName : 'guest'}
+            currentUserName={userName || 'Guest'}
+          />
         )}
 
         {currentPage === 'cart' && (

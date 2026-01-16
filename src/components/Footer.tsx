@@ -100,7 +100,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-green-500 pt-6 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-green-100 text-sm">
-            © {new Date().getFullYear()} Extramile Africa. All Rights Reserved.
+            ©{new Date().getFullYear()} Extramile Africa. All Rights Reserved.
           </p>
           <div className="flex gap-6">
             <a href="#" className="text-green-100 hover:text-white transition-colors text-sm">
