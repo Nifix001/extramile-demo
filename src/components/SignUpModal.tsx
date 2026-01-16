@@ -1,14 +1,15 @@
+// src/components/NewsletterModal.tsx
 
 import React, { useState } from 'react';
-import { X } from 'lucide-react';
+import { X, Mail, Gift } from 'lucide-react';
 
-interface SignUpModalProps {
+interface NewsletterModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSignUp: (email: string) => void;
+  onSubscribe: (email: string) => void;
 }
 
-export default function SignUpModal({ isOpen, onClose, onSignUp }: SignUpModalProps) {
+export default function NewsletterModal({ isOpen, onClose, onSubscribe }: NewsletterModalProps) {
   const [email, setEmail] = useState('');
 
   if (!isOpen) return null;
@@ -16,42 +17,64 @@ export default function SignUpModal({ isOpen, onClose, onSignUp }: SignUpModalPr
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (email) {
-      onSignUp(email);
+      onSubscribe(email);
       setEmail('');
     }
   };
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all">
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 animate-fade-in">
+      <div className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl transform transition-all relative">
         <button
           onClick={onClose}
-          className="float-right text-gray-400 hover:text-gray-600 transition-colors"
+          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
         >
           <X size={24} />
         </button>
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">Join ExtraMile!</h2>
-        <p className="text-gray-600 mb-6">
-          Sign up now to buy assets on credit and get exclusive offers!
-        </p>
+
+        <div className="text-center mb-6">
+          <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Gift className="text-white" size={40} />
+          </div>
+          <h2 className="text-3xl font-bold text-gray-800 mb-3">
+            Get Exclusive Offers! 🎉
+          </h2>
+          <p className="text-gray-600 leading-relaxed">
+            Subscribe to our newsletter and be the first to know about special deals, new products, and credit offers!
+          </p>
+        </div>
+
         <form onSubmit={handleSubmit}>
-          <input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg mb-4 focus:outline-none focus:ring-2 focus:ring-green-600"
-          />
+          <div className="relative mb-4">
+            <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <input
+              type="email"
+              placeholder="Enter your email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full pl-12 pr-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent"
+            />
+          </div>
+
           <button
             type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 transition-all duration-300 hover:scale-105"
+            className="w-full bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition-all duration-300 hover:scale-105 mb-4"
           >
-            Sign Up & Subscribe
+            Subscribe Now
           </button>
+
+          <div className="flex items-center justify-center gap-2 text-xs text-gray-500">
+            <span>✓ Weekly deals</span>
+            <span>•</span>
+            <span>✓ New arrivals</span>
+            <span>•</span>
+            <span>✓ Credit tips</span>
+          </div>
         </form>
-        <p className="text-xs text-gray-500 mt-4 text-center">
-          Get newsletters on latest offers and updates
+
+        <p className="text-xs text-center text-gray-400 mt-4">
+          We respect your privacy. Unsubscribe anytime.
         </p>
       </div>
     </div>

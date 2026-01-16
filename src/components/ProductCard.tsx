@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Asset } from '@/src/types';
+import Image from 'next/image';
 
 interface ProductCardProps {
   asset: Asset;
@@ -10,8 +11,8 @@ interface ProductCardProps {
 export default function ProductCard({ asset, onAddToCart }: ProductCardProps) {
   return (
     <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow">
-      <div className="text-6xl p-8 bg-linear-to-br from-green-50 to-green-100 text-center">
-        {asset.image}
+      <div className="flex items-center justify-center w-40 h-40 text-center">
+        <Image src={asset.image} alt='image' width={200} height={250} className='object-fill' unoptimized />
       </div>
       <div className="p-6">
         <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded-full">
