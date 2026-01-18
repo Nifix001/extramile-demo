@@ -1,5 +1,3 @@
-// src/app/page.tsx
-
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -16,116 +14,117 @@ import { Asset, PageType, ToastType } from '@/src/types';
 import SignUpPage from '@/src/components/SignUpPage';
 import NewsletterModal from '@/src/components/SignUpModal';
 import LoginPage from '@/src/components/LoginPage';
-import { seedCommunityPosts } from '@/src/utils/seedCommunity';
+import { cartService } from '@/src/utils/supabaseCart';
+import { newsletterService } from '@/src/utils/supabaseNewsletter';
+import { authService } from '@/src/utils/supabaseAuth';
+
 
 type AuthPage = 'main' | 'login' | 'signup';
+
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+}
 
 export default function Home() {
   const [authPage, setAuthPage] = useState<AuthPage>('main');
   const [isAuth, setIsAuth] = useState(false);
-  const [userName, setUserName] = useState('');
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showNewsletterModal, setShowNewsletterModal] = useState(false);
   const [cart, setCart] = useState<Asset[]>([]);
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [toast, setToast] = useState<ToastType>({ show: false, message: '' });
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Seed community posts on first load
-    seedCommunityPosts();
+    checkAuth();
+  }, []);
+
+  const checkAuth = async () => {
+    setIsLoading(true);
+    const user = await authService.getCurrentUser();
     
-    // Check if user is already logged in (from localStorage)
-    const savedUser = localStorage.getItem('extramile_user');
-    if (savedUser) {
-      const user = JSON.parse(savedUser);
+    if (user) {
       setIsAuth(true);
-      setUserName(user.name);
+      setCurrentUser(user);
+      loadCart(user.id);
     } else {
       // Show newsletter modal for unauthenticated users after 3 seconds
-      const timer = setTimeout(() => {
+      setTimeout(() => {
         setShowNewsletterModal(true);
       }, 3000);
-      return () => clearTimeout(timer);
     }
-  }, []);
+    setIsLoading(false);
+  };
+
+  const loadCart = async (userId: string) => {
+    const cartItems = await cartService.getCart(userId);
+    setCart(cartItems);
+  };
 
   const showToast = (message: string) => {
     setToast({ show: true, message });
     setTimeout(() => setToast({ show: false, message: '' }), 3000);
   };
 
-  const handleLogin = (email: string, password: string) => {
-    // Simple demo login - in production, validate against backend
-    const savedUsers = localStorage.getItem('extramile_users');
-    if (savedUsers) {
-      const users = JSON.parse(savedUsers);
-      const user = users.find((u: any) => u.email === email && u.password === password);
-      
-      if (user) {
-        setIsAuth(true);
-        setUserName(user.name);
-        setAuthPage('main');
-        localStorage.setItem('extramile_user', JSON.stringify(user));
-        showToast(`Welcome back, ${user.name}!`);
-      } else {
-        showToast('Invalid email or password');
-      }
+  const handleLogin = async (email: string, password: string) => {
+    const result = await authService.login(email, password);
+    
+    if (result.success && result.user) {
+      setIsAuth(true);
+      setCurrentUser(result.user);
+      setAuthPage('main');
+      loadCart(result.user.id);
+      showToast(`Welcome back, ${result.user.name}!`);
     } else {
-      showToast('No account found. Please sign up first.');
+      showToast(result.error || 'Login failed');
     }
   };
 
-  const handleSignUp = (name: string, email: string, phone: string, password: string) => {
-    // Save user to localStorage (demo purposes)
-    const newUser = { name, email, phone, password };
+  const handleSignUp = async (name: string, email: string, phone: string, password: string) => {
+    const result = await authService.signUp(email, password, name, phone);
     
-    const savedUsers = localStorage.getItem('extramile_users');
-    const users = savedUsers ? JSON.parse(savedUsers) : [];
-    
-    // Check if email already exists
-    if (users.some((u: any) => u.email === email)) {
-      showToast('Email already registered. Please login.');
-      return;
+    if (result.success && result.user) {
+      setIsAuth(true);
+      setCurrentUser(result.user);
+      setAuthPage('main');
+      showToast(`Welcome, ${name}! Your account has been created.`);
+    } else {
+      showToast(result.error || 'Sign up failed');
     }
-    
-    users.push(newUser);
-    localStorage.setItem('extramile_users', JSON.stringify(users));
-    localStorage.setItem('extramile_user', JSON.stringify(newUser));
-    
-    setIsAuth(true);
-    setUserName(name);
-    setAuthPage('main');
-    showToast(`Welcome, ${name}! Your account has been created.`);
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('extramile_user');
+  const handleLogout = async () => {
+    await authService.logout();
     setIsAuth(false);
-    setUserName('');
+    setCurrentUser(null);
     setCart([]);
     setCurrentPage('home');
     showToast('Logged out successfully');
   };
 
-  const handleNewsletterSubscribe = (email: string) => {
-    // Save newsletter subscription
-    const subscriptions = localStorage.getItem('extramile_newsletter') || '[]';
-    const subs = JSON.parse(subscriptions);
-    if (!subs.includes(email)) {
-      subs.push(email);
-      localStorage.setItem('extramile_newsletter', JSON.stringify(subs));
-    }
+  const handleNewsletterSubscribe = async (email: string) => {
+    const result = await newsletterService.subscribe(email);
     setShowNewsletterModal(false);
-    showToast('Thanks for subscribing! Check your email for exclusive offers.');
+    showToast(result.message || 'Thanks for subscribing!');
   };
 
-  const addToCart = (asset: Asset) => {
-    if (!isAuth) {
+  const addToCart = async (asset: Asset) => {
+    if (!isAuth || !currentUser) {
       showToast('Please login to add items to cart!');
       setAuthPage('login');
       return;
     }
-    setCart([...cart, asset]);
-    showToast('Added to cart!');
+
+    const result = await cartService.addToCart(currentUser.id, asset);
+    if (result.success) {
+      setCart([...cart, asset]);
+      showToast('Added to cart!');
+    } else {
+      showToast('Failed to add to cart');
+    }
   };
 
   const handleCheckout = () => {
@@ -133,10 +132,29 @@ export default function Home() {
     sendToWhatsApp(cart);
   };
 
-  const removeFromCart = (index: number) => {
-    setCart(cart.filter((_, i) => i !== index));
-    showToast('Item removed from cart');
+  const removeFromCart = async (index: number) => {
+    if (!currentUser) return;
+    
+    const asset = cart[index];
+    const result = await cartService.removeFromCart(currentUser.id, asset.id);
+    
+    if (result.success) {
+      setCart(cart.filter((_, i) => i !== index));
+      showToast('Item removed from cart');
+    }
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block w-12 h-12 border-4 border-green-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show login/signup pages
   if (authPage === 'login') {
@@ -179,7 +197,7 @@ export default function Home() {
         setCurrentPage={setCurrentPage}
         cartCount={cart.length}
         isAuth={isAuth}
-        userName={userName}
+        userName={currentUser?.name}
         onLogout={handleLogout}
         onLoginClick={() => setAuthPage('login')}
       />
@@ -195,8 +213,13 @@ export default function Home() {
 
         {currentPage === 'community' && (
           <CommunityPage 
-            currentUserId={isAuth ? userName : 'guest'}
-            currentUserName={userName || 'Guest'}
+            currentUserId={currentUser?.id || 'guest'}
+            currentUserName={currentUser?.name || 'Guest'}
+            isAuthenticated={isAuth}
+            onLoginRequired={() => {
+              showToast('Please login to interact with posts');
+              setAuthPage('login');
+            }}
           />
         )}
 

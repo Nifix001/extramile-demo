@@ -3,14 +3,21 @@ import React, { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import PostCard from './PostCard';
 import { Post } from '../types/community';
-import { communityStorage } from '../utils/communityStorage';
+import { communityService } from '../utils/supabaseCommunity';
 
 interface CommunityPageProps {
   currentUserId: string;
   currentUserName: string;
+  isAuthenticated: boolean;
+  onLoginRequired: () => void;
 }
 
-export default function CommunityPage({ currentUserId, currentUserName }: CommunityPageProps) {
+export default function CommunityPage({ 
+  currentUserId, 
+  currentUserName, 
+  isAuthenticated,
+  onLoginRequired 
+}: CommunityPageProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -24,37 +31,70 @@ export default function CommunityPage({ currentUserId, currentUserName }: Commun
     loadPosts();
   }, [currentPage]);
 
-  const loadPosts = () => {
+  const loadPosts = async () => {
     setIsLoading(true);
-    const { posts: loadedPosts, totalPages: total } = communityStorage.getPaginatedPosts(currentPage, POSTS_PER_PAGE);
+    const { posts: loadedPosts, totalPages: total } = await communityService.getPosts(currentPage, POSTS_PER_PAGE);
     setPosts(loadedPosts);
     setTotalPages(total);
     setIsLoading(false);
   };
 
-  const handleCreatePost = (e: React.FormEvent) => {
+  const handleCreatePostClick = () => {
+    if (!isAuthenticated) {
+      onLoginRequired();
+      return;
+    }
+    setShowCreatePost(true);
+  };
+
+  const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isAuthenticated) {
+      onLoginRequired();
+      return;
+    }
+    
     if (newPostContent.trim()) {
-      communityStorage.createPost(currentUserId, currentUserName, newPostContent);
-      setNewPostContent('');
-      setShowCreatePost(false);
-      setCurrentPage(1); // Go to first page to see new post
-      loadPosts();
+      try {
+        await communityService.createPost(currentUserId, currentUserName, newPostContent);
+        setNewPostContent('');
+        setShowCreatePost(false);
+        setCurrentPage(1);
+        loadPosts();
+      } catch (error) {
+        console.error('Failed to create post:', error);
+      }
     }
   };
 
-  const handleLikePost = (postId: string) => {
-    communityStorage.toggleLikePost(postId, currentUserId);
+  const handleLikePost = async (postId: string) => {
+    if (!isAuthenticated) {
+      onLoginRequired();
+      return;
+    }
+    await communityService.toggleLikePost(postId, currentUserId);
     loadPosts();
   };
 
-  const handleReply = (postId: string, content: string) => {
-    communityStorage.addReply(postId, currentUserId, currentUserName, content);
-    loadPosts();
+  const handleReply = async (postId: string, content: string) => {
+    if (!isAuthenticated) {
+      onLoginRequired();
+      return;
+    }
+    try {
+      await communityService.addReply(postId, currentUserId, currentUserName, content);
+      loadPosts();
+    } catch (error) {
+      console.error('Failed to add reply:', error);
+    }
   };
 
-  const handleLikeReply = (postId: string, replyId: string) => {
-    communityStorage.toggleLikeReply(postId, replyId, currentUserId);
+  const handleLikeReply = async (postId: string, replyId: string) => {
+    if (!isAuthenticated) {
+      onLoginRequired();
+      return;
+    }
+    await communityService.toggleLikeReply(replyId, currentUserId);
     loadPosts();
   };
 
@@ -69,19 +109,24 @@ export default function CommunityPage({ currentUserId, currentUserName }: Commun
       <div className="mb-8">
         <h2 className="text-3xl font-bold text-gray-800 mb-2">Community</h2>
         <p className="text-gray-600">Connect with other ExtraMile customers, share experiences, and get advice</p>
+        {!isAuthenticated && (
+          <div className="mt-3 bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-sm text-yellow-800">
+            ℹ️ You're browsing as a guest. <button onClick={onLoginRequired} className="underline font-semibold hover:text-yellow-900">Login</button> to post, like, and reply.
+          </div>
+        )}
       </div>
 
       {/* Create Post Button/Form */}
       {!showCreatePost ? (
         <button
-          onClick={() => setShowCreatePost(true)}
+          onClick={handleCreatePostClick}
           className="w-full bg-white rounded-xl shadow-md p-4 mb-6 flex items-center gap-3 hover:shadow-lg transition-shadow group"
         >
           <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold">
-            {currentUserName[0].toUpperCase()}
+            {isAuthenticated ? (currentUserName[0]?.toUpperCase() || 'U') : '?'}
           </div>
           <span className="text-gray-500 text-left flex-1 group-hover:text-gray-700">
-            Share your thoughts or ask a question...
+            {isAuthenticated ? 'Share your thoughts or ask a question...' : 'Login to share your thoughts...'}
           </span>
           <Plus className="text-green-600" size={24} />
         </button>
@@ -89,7 +134,7 @@ export default function CommunityPage({ currentUserId, currentUserName }: Commun
         <form onSubmit={handleCreatePost} className="bg-white rounded-xl shadow-md p-6 mb-6">
           <div className="flex gap-3 mb-4">
             <div className="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center text-white font-bold flex-shrink-0">
-              {currentUserName[0].toUpperCase()}
+              {currentUserName[0]?.toUpperCase() || 'U'}
             </div>
             <div className="flex-1">
               <div className="font-bold text-gray-800 mb-2">{currentUserName}</div>
@@ -139,12 +184,21 @@ export default function CommunityPage({ currentUserId, currentUserName }: Commun
               <div className="text-6xl mb-4">💬</div>
               <h3 className="text-xl font-bold text-gray-800 mb-2">No posts yet</h3>
               <p className="text-gray-600 mb-6">Be the first to start a conversation!</p>
-              <button
-                onClick={() => setShowCreatePost(true)}
-                className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
-              >
-                Create First Post
-              </button>
+              {isAuthenticated ? (
+                <button
+                  onClick={() => setShowCreatePost(true)}
+                  className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                >
+                  Create First Post
+                </button>
+              ) : (
+                <button
+                  onClick={onLoginRequired}
+                  className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 transition-colors"
+                >
+                  Login to Post
+                </button>
+              )}
             </div>
           ) : (
             <div className="space-y-6">
@@ -174,7 +228,6 @@ export default function CommunityPage({ currentUserId, currentUserName }: Commun
 
               <div className="flex gap-2">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
-                  // Show first page, last page, current page, and pages around current
                   if (
                     page === 1 ||
                     page === totalPages ||
