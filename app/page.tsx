@@ -69,6 +69,7 @@ export default function Home() {
     setTimeout(() => setToast({ show: false, message: '' }), 3000);
   };
 
+  
   const handleLogin = async (email: string, password: string) => {
     const result = await authService.login(email, password);
     
