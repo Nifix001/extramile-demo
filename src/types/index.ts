@@ -42,4 +42,4 @@ export interface ToastType {
   message: string;
 }
 
-export type PageType = 'home' | 'store' | 'community' | 'cart';
+export type PageType = 'home' | 'store' | 'extracoop' | 'community' | 'cart';

@@ -17,6 +17,8 @@ import LoginPage from '@/src/components/LoginPage';
 import { cartService } from '@/src/utils/supabaseCart';
 import { newsletterService } from '@/src/utils/supabaseNewsletter';
 import { authService } from '@/src/utils/supabaseAuth';
+import ExtraCoopPage from '@/src/components/ExtraCoopPage';
+import PaymentMethodModal from '@/src/components/PaymentMethodModal';
 
 
 type AuthPage = 'main' | 'login' | 'signup';
@@ -33,6 +35,7 @@ export default function Home() {
   const [isAuth, setIsAuth] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showNewsletterModal, setShowNewsletterModal] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [cart, setCart] = useState<Asset[]>([]);
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [toast, setToast] = useState<ToastType>({ show: false, message: '' });
@@ -69,7 +72,6 @@ export default function Home() {
     setTimeout(() => setToast({ show: false, message: '' }), 3000);
   };
 
-  
   const handleLogin = async (email: string, password: string) => {
     const result = await authService.login(email, password);
     
@@ -130,7 +132,27 @@ export default function Home() {
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
-    sendToWhatsApp(cart);
+    
+    if (!isAuth) {
+      setAuthPage('login');
+      showToast('Please login to complete your purchase');
+      return;
+    }
+    
+    // Show payment method selection modal
+    setShowPaymentModal(true);
+  };
+
+  const handlePaymentMethodSelect = (method: 'full' | 'installment') => {
+    if (method === 'full') {
+      // Full payment - send to WhatsApp
+      sendToWhatsApp(cart);
+      showToast('Redirecting to WhatsApp for full payment...');
+    } else {
+      // Installment - go to ExtraCoop page
+      setCurrentPage('extracoop');
+      showToast('Redirecting to ExtraCoop membership...');
+    }
   };
 
   const removeFromCart = async (index: number) => {
@@ -193,6 +215,13 @@ export default function Home() {
         onSubscribe={handleNewsletterSubscribe} 
       />
 
+      <PaymentMethodModal
+        isOpen={showPaymentModal}
+        onClose={() => setShowPaymentModal(false)}
+        cartItemCount={cart.length}
+        onSelectPayment={handlePaymentMethodSelect}
+      />
+
       <Header 
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
@@ -212,6 +241,24 @@ export default function Home() {
           <StorePage assets={ASSETS} onAddToCart={addToCart} />
         )}
 
+        {currentPage === 'extracoop' && (
+          <ExtraCoopPage 
+            isAuthenticated={isAuth}
+            userName={currentUser?.name}
+            userEmail={currentUser?.email}
+            userPhone={currentUser?.phone}
+            isMember={false} // Will be true after KYC verification
+            onJoinClick={() => {
+              if (!isAuth) {
+                setAuthPage('login');
+                showToast('Login to join ExtraCoop membership');
+              } else {
+                showToast('Membership enrollment coming soon!');
+              }
+            }}
+          />
+        )}
+
         {currentPage === 'community' && (
           <CommunityPage 
             currentUserId={currentUser?.id || 'guest'}
@@ -228,7 +275,8 @@ export default function Home() {
           <CartPage 
             cart={cart} 
             onRemoveItem={removeFromCart} 
-            onCheckout={handleCheckout} 
+            onCheckout={handleCheckout}
+            isAuthenticated={isAuth}
           />
         )}
       </main>

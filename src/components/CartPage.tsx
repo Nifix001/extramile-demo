@@ -1,16 +1,17 @@
+// src/components/CartPage.tsx
 
 import React from 'react';
 import { ShoppingCart, MessageCircle } from 'lucide-react';
 import { Asset } from '@/src/types';
-import Image from 'next/image';
 
 interface CartPageProps {
   cart: Asset[];
   onRemoveItem: (index: number) => void;
   onCheckout: () => void;
+  isAuthenticated: boolean;
 }
 
-export default function CartPage({ cart, onRemoveItem, onCheckout }: CartPageProps) {
+export default function CartPage({ cart, onRemoveItem, onCheckout, isAuthenticated }: CartPageProps) {
   const total = cart.reduce((sum, item) => sum + item.price, 0);
 
   if (cart.length === 0) {
@@ -32,17 +33,16 @@ export default function CartPage({ cart, onRemoveItem, onCheckout }: CartPagePro
         {cart.map((item, index) => (
           <div key={index} className="bg-white p-6 rounded-xl shadow-md flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex items-center justify-center w-40 h-40 text-center">
-                      <Image src={item.image} alt='image' width={200} height={250} className='object-fill' unoptimized />
-                    </div>
+              <div className="text-4xl">{item.image}</div>
               <div>
                 <h3 className="font-bold">{item.name}</h3>
+                <p className="text-sm text-gray-500">{item.category}</p>
                 <p className="text-green-600 font-semibold">₦{item.price.toLocaleString()}</p>
               </div>
             </div>
             <button
               onClick={() => onRemoveItem(index)}
-              className="text-red-500 hover:text-red-700 font-medium transition-colors"
+              className="text-red-500 hover:text-red-700 font-medium transition-colors px-4 py-2"
             >
               Remove
             </button>
@@ -56,13 +56,26 @@ export default function CartPage({ cart, onRemoveItem, onCheckout }: CartPagePro
               ₦{total.toLocaleString()}
             </span>
           </div>
-          <button
-            onClick={onCheckout}
-            className="w-full bg-white text-green-600 py-3 rounded-lg font-bold hover:bg-gray-100 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
-          >
-            <MessageCircle size={20} />
-            Complete Purchase
-          </button>
+          
+          {isAuthenticated ? (
+            <button
+              onClick={onCheckout}
+              className="w-full bg-white text-green-600 py-3 rounded-lg font-bold hover:bg-gray-100 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
+            >
+              <MessageCircle size={20} />
+              Complete Purchase
+            </button>
+          ) : (
+            <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 text-center">
+              <p className="text-sm mb-3">Please login to complete your purchase</p>
+              <button
+                onClick={onCheckout}
+                className="w-full bg-white text-green-600 py-3 rounded-lg font-bold hover:bg-gray-100 transition-colors"
+              >
+                Login to Continue
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
