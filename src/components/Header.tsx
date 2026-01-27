@@ -5,6 +5,8 @@
 import React, { useState } from 'react';
 import { ShoppingCart, Menu, X, Home, Store, Users, LogOut, User, Award } from 'lucide-react';
 import { PageType } from '@/src/types';
+import Image from 'next/image';
+import e from "@/public/emile.png"
 
 interface HeaderProps {
   currentPage: PageType;
@@ -49,10 +51,7 @@ export default function Header({
     <header className="bg-white shadow-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
         <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentPage('home')}>
-          <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
-            E
-          </div>
-          <span className="text-xl font-bold text-gray-800">ExtraMile</span>
+          <Image src={e} alt='logo' width={50} height={50} />
         </div>
 
         {/* Desktop Nav */}
