@@ -1,4 +1,3 @@
-// src/components/StorePage.tsx
 
 'use client';
 

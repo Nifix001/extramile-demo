@@ -1,4 +1,3 @@
-// components/LoginPage.tsx
 
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff } from 'lucide-react';

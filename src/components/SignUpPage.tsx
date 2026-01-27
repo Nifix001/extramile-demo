@@ -1,4 +1,3 @@
-// components/SignUpPage.tsx
 
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, User, Phone } from 'lucide-react';

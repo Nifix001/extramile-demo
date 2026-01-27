@@ -19,6 +19,7 @@ import { newsletterService } from '@/src/utils/supabaseNewsletter';
 import { authService } from '@/src/utils/supabaseAuth';
 import ExtraCoopPage from '@/src/components/ExtraCoopPage';
 import PaymentMethodModal from '@/src/components/PaymentMethodModal';
+import SignUpModal from '@/src/components/SignUpModal';
 
 
 type AuthPage = 'main' | 'login' | 'signup';
@@ -34,7 +35,7 @@ export default function Home() {
   const [authPage, setAuthPage] = useState<AuthPage>('main');
   const [isAuth, setIsAuth] = useState(false);
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [showNewsletterModal, setShowNewsletterModal] = useState(false);
+  const [showSignUpModal, setShowSignUpModal] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [cart, setCart] = useState<Asset[]>([]);
   const [currentPage, setCurrentPage] = useState<PageType>('home');
@@ -54,9 +55,9 @@ export default function Home() {
       setCurrentUser(user);
       loadCart(user.id);
     } else {
-      // Show newsletter modal for unauthenticated users after 3 seconds
+      // Show sign up modal for unauthenticated users after 3 seconds
       setTimeout(() => {
-        setShowNewsletterModal(true);
+        setShowSignUpModal(true);
       }, 3000);
     }
     setIsLoading(false);
@@ -110,7 +111,6 @@ export default function Home() {
 
   const handleNewsletterSubscribe = async (email: string) => {
     const result = await newsletterService.subscribe(email);
-    setShowNewsletterModal(false);
     showToast(result.message || 'Thanks for subscribing!');
   };
 
@@ -209,10 +209,13 @@ export default function Home() {
     <div className="min-h-screen bg-gray-50">
       <Toast toast={toast} />
       
-      <NewsletterModal 
-        isOpen={showNewsletterModal && !isAuth} 
-        onClose={() => setShowNewsletterModal(false)} 
-        onSubscribe={handleNewsletterSubscribe} 
+      <SignUpModal 
+        isOpen={showSignUpModal && !isAuth} 
+        onClose={() => setShowSignUpModal(false)} 
+        onSignUpClick={() => {
+          setShowSignUpModal(false);
+          setAuthPage('signup');
+        }}
       />
 
       <PaymentMethodModal

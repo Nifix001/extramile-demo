@@ -1,6 +1,3 @@
-// src/components/CartPage.tsx
-
-import React from 'react';
 import { ShoppingCart, MessageCircle } from 'lucide-react';
 import { Asset } from '@/src/types';
 

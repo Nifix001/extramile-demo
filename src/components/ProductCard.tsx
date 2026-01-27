@@ -1,5 +1,4 @@
 
-import React from 'react';
 import { Asset } from '@/src/types';
 import Image from 'next/image';
 

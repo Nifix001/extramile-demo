@@ -1,6 +1,3 @@
-// src/components/HomePage.tsx
-
-import React from 'react';
 import { Sparkles, Zap, Shield, TrendingUp, Clock, Award } from 'lucide-react';
 
 interface HomePageProps {

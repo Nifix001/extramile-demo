@@ -1,6 +1,4 @@
-// src/components/Footer.tsx
 
-import React from 'react';
 import { Mail, Phone, MapPin, Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
 import Image from 'next/image';
 import e from "../../public/emilee.png"

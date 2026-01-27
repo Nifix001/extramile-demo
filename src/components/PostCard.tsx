@@ -1,5 +1,3 @@
-// components/PostCard.tsx
-
 import React, { useState } from 'react';
 import { Heart, MessageCircle, Send } from 'lucide-react';
 import { Post, Reply } from '@/src//types/community';
