@@ -127,7 +127,7 @@ export default function SignUpModal({ isOpen, onClose, onSignUpClick }: SignUpMo
           </h2>
           
           <p className="text-xl mb-6 text-green-50">
-            Join thousands of Nigerians who are shopping smarter with ExtraMile
+            Join thousands of Nigerians who are enjoying smarter credit access with ExtraMile
           </p>
 
           <div className="bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl p-6 mb-8">

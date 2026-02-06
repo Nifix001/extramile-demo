@@ -237,7 +237,10 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {currentPage === 'home' && (
-          <HomePage onShopNowClick={() => setCurrentPage('store')} />
+          <HomePage 
+            onShopNowClick={() => setCurrentPage('store')}
+            onExtraCoopClick={() => setCurrentPage('extracoop')}
+          />
         )}
 
         {currentPage === 'store' && (
