@@ -244,7 +244,12 @@ export default function Home() {
         )}
 
         {currentPage === 'store' && (
-          <StorePage assets={ASSETS} onAddToCart={addToCart} />
+          <StorePage 
+            assets={ASSETS} 
+            onAddToCart={addToCart}
+            cartCount={cart.length}
+            onCartClick={() => setCurrentPage('cart')}
+          />
         )}
 
         {currentPage === 'extracoop' && (

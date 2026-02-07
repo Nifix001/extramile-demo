@@ -4,17 +4,19 @@
 import React, { useState, useMemo } from 'react';
 import { Asset } from '@/src/types';
 import ProductCard from './ProductCard';
-import { Search, ChevronDown, X } from 'lucide-react';
+import { Search, ChevronDown, X, ShoppingCart } from 'lucide-react';
 import { CATEGORIES } from '@/src/data/dummy-data';
 
 interface StorePageProps {
   assets: Asset[];
   onAddToCart: (asset: Asset) => void;
+  cartCount: number;
+  onCartClick: () => void;
 }
 
 type SortOption = 'featured' | 'price-low' | 'price-high' | 'name-az' | 'name-za';
 
-export default function StorePage({ assets, onAddToCart }: StorePageProps) {
+export default function StorePage({ assets, onAddToCart, cartCount, onCartClick }: StorePageProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [sortBy, setSortBy] = useState<SortOption>('featured');
@@ -77,7 +79,7 @@ export default function StorePage({ assets, onAddToCart }: StorePageProps) {
   const hasFilters = searchTerm || selectedCategory !== 'All Categories' || sortBy !== 'featured';
 
   return (
-    <div>
+    <div className="relative">
       <h2 className="text-3xl font-bold mb-6">Our Products</h2>
 
       {/* Search and Filters */}
@@ -229,6 +231,19 @@ export default function StorePage({ assets, onAddToCart }: StorePageProps) {
             Clear All Filters
           </button>
         </div>
+      )}
+      
+      {/* Floating Cart Button */}
+      {cartCount > 0 && (
+        <button
+          onClick={onCartClick}
+          className="fixed bottom-8 right-8 z-40 bg-green-600 text-white p-4 rounded-full shadow-2xl hover:bg-green-700 transition-all duration-300 hover:scale-110 group"
+        >
+          <ShoppingCart size={28} className="group-hover:animate-bounce" />
+          <span className="absolute -top-2 -right-2 bg-red-500 text-white text-sm font-bold w-7 h-7 rounded-full flex items-center justify-center animate-pulse">
+            {cartCount}
+          </span>
+        </button>
       )}
     </div>
   );
