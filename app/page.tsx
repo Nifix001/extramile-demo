@@ -12,7 +12,6 @@ import { ASSETS, COMMUNITY_POSTS } from '@/src/data/dummy-data';
 import { sendToWhatsApp } from '@/src/utils/whatsapp';
 import { Asset, PageType, ToastType } from '@/src/types';
 import SignUpPage from '@/src/components/SignUpPage';
-import NewsletterModal from '@/src/components/SignUpModal';
 import LoginPage from '@/src/components/LoginPage';
 import { cartService } from '@/src/utils/supabaseCart';
 import { newsletterService } from '@/src/utils/supabaseNewsletter';
@@ -20,6 +19,7 @@ import { authService } from '@/src/utils/supabaseAuth';
 import ExtraCoopPage from '@/src/components/ExtraCoopPage';
 import PaymentMethodModal from '@/src/components/PaymentMethodModal';
 import SignUpModal from '@/src/components/SignUpModal';
+import DiscountedStorePage from '@/src/components/DiscountedStorePage';
 
 
 type AuthPage = 'main' | 'login' | 'signup';
@@ -49,7 +49,7 @@ export default function Home() {
   const checkAuth = async () => {
     setIsLoading(true);
     const user = await authService.getCurrentUser();
-    
+
     if (user) {
       setIsAuth(true);
       setCurrentUser(user);
@@ -75,7 +75,7 @@ export default function Home() {
 
   const handleLogin = async (email: string, password: string) => {
     const result = await authService.login(email, password);
-    
+
     if (result.success && result.user) {
       setIsAuth(true);
       setCurrentUser(result.user);
@@ -89,7 +89,7 @@ export default function Home() {
 
   const handleSignUp = async (name: string, email: string, phone: string, password: string) => {
     const result = await authService.signUp(email, password, name, phone);
-    
+
     if (result.success && result.user) {
       setIsAuth(true);
       setCurrentUser(result.user);
@@ -132,13 +132,13 @@ export default function Home() {
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
-    
+
     if (!isAuth) {
       setAuthPage('login');
       showToast('Please login to complete your purchase');
       return;
     }
-    
+
     // Show payment method selection modal
     setShowPaymentModal(true);
   };
@@ -157,10 +157,10 @@ export default function Home() {
 
   const removeFromCart = async (index: number) => {
     if (!currentUser) return;
-    
+
     const asset = cart[index];
     const result = await cartService.removeFromCart(currentUser.id, asset.id);
-    
+
     if (result.success) {
       setCart(cart.filter((_, i) => i !== index));
       showToast('Item removed from cart');
@@ -184,7 +184,7 @@ export default function Home() {
     return (
       <>
         <Toast toast={toast} />
-        <LoginPage 
+        <LoginPage
           onLogin={handleLogin}
           onSwitchToSignup={() => setAuthPage('signup')}
         />
@@ -196,7 +196,7 @@ export default function Home() {
     return (
       <>
         <Toast toast={toast} />
-        <SignUpPage 
+        <SignUpPage
           onSignUp={handleSignUp}
           onSwitchToLogin={() => setAuthPage('login')}
         />
@@ -208,10 +208,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Toast toast={toast} />
-      
-      <SignUpModal 
-        isOpen={showSignUpModal && !isAuth} 
-        onClose={() => setShowSignUpModal(false)} 
+
+      <SignUpModal
+        isOpen={showSignUpModal && !isAuth}
+        onClose={() => setShowSignUpModal(false)}
         onSignUpClick={() => {
           setShowSignUpModal(false);
           setAuthPage('signup');
@@ -225,7 +225,7 @@ export default function Home() {
         onSelectPayment={handlePaymentMethodSelect}
       />
 
-      <Header 
+      <Header
         currentPage={currentPage}
         setCurrentPage={setCurrentPage}
         cartCount={cart.length}
@@ -237,15 +237,15 @@ export default function Home() {
 
       <main className="max-w-7xl mx-auto px-4 py-8">
         {currentPage === 'home' && (
-          <HomePage 
+          <HomePage
             onShopNowClick={() => setCurrentPage('store')}
             onExtraCoopClick={() => setCurrentPage('extracoop')}
           />
         )}
 
         {currentPage === 'store' && (
-          <StorePage 
-            assets={ASSETS} 
+          <StorePage
+            assets={ASSETS}
             onAddToCart={addToCart}
             cartCount={cart.length}
             onCartClick={() => setCurrentPage('cart')}
@@ -253,7 +253,7 @@ export default function Home() {
         )}
 
         {currentPage === 'extracoop' && (
-          <ExtraCoopPage 
+          <ExtraCoopPage
             isAuthenticated={isAuth}
             userName={currentUser?.name}
             userEmail={currentUser?.email}
@@ -271,7 +271,7 @@ export default function Home() {
         )}
 
         {currentPage === 'community' && (
-          <CommunityPage 
+          <CommunityPage
             currentUserId={currentUser?.id || 'guest'}
             currentUserName={currentUser?.name || 'Guest'}
             isAuthenticated={isAuth}
@@ -281,11 +281,19 @@ export default function Home() {
             }}
           />
         )}
+        
+        {currentPage === 'mini' && (
+          <DiscountedStorePage
+            onAddToCart={addToCart}
+            cartCount={cart.length}
+            onCartClick={() => setCurrentPage('cart')}
+          />
+        )}
 
         {currentPage === 'cart' && (
-          <CartPage 
-            cart={cart} 
-            onRemoveItem={removeFromCart} 
+          <CartPage
+            cart={cart}
+            onRemoveItem={removeFromCart}
             onCheckout={handleCheckout}
             isAuthenticated={isAuth}
           />

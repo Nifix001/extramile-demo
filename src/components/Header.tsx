@@ -16,10 +16,10 @@ interface HeaderProps {
   onLoginClick: () => void;
 }
 
-export default function Header({ 
-  currentPage, 
-  setCurrentPage, 
-  cartCount, 
+export default function Header({
+  currentPage,
+  setCurrentPage,
+  cartCount,
   isAuth,
   userName,
   onLogout,
@@ -31,15 +31,14 @@ export default function Header({
 
   const NavButton = ({ icon: Icon, label, page }: { icon: any; label: string; page: PageType }) => (
     <button
-      onClick={() => { 
-        setCurrentPage(page); 
-        setShowMenu(false); 
+      onClick={() => {
+        setCurrentPage(page);
+        setShowMenu(false);
       }}
-      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-        currentPage === page 
-          ? 'bg-green-600 text-white scale-105' 
+      className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${currentPage === page
+          ? 'bg-green-600 text-white scale-105'
           : 'hover:bg-green-100 text-gray-700'
-      }`}
+        }`}
     >
       <Icon size={20} />
       <span className="font-medium">{label}</span>
@@ -49,7 +48,7 @@ export default function Header({
   return (
     <header className="bg-white shadow-md sticky top-0 z-40">
       <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentPage('home')}>
+        <div className="flex items-center gap-2 cursor-pointer" onClick={() => setCurrentPage('home')}>
           <Image src={e} alt='logo' width={50} height={50} />
         </div>
 
@@ -57,7 +56,8 @@ export default function Header({
         <nav className="hidden md:flex items-center gap-4">
           <NavButton icon={Home} label="Home" page="home" />
           <NavButton icon={Store} label="Store" page="store" />
-          
+          <NavButton icon={Store} label="Discount Store" page="mini" />
+
           {/* ExtraCoop with Dropdown */}
           <div className="relative">
             <button
@@ -65,11 +65,10 @@ export default function Header({
                 setShowExtraCoopMenu(!showExtraCoopMenu);
                 setShowUserMenu(false);
               }}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${
-                currentPage === 'extracoop' 
-                  ? 'bg-green-600 text-white scale-105' 
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all duration-300 ${currentPage === 'extracoop'
+                  ? 'bg-green-600 text-white scale-105'
                   : 'hover:bg-green-100 text-gray-700'
-              }`}
+                }`}
             >
               <Award size={20} />
               <span className="font-medium">ExtraCoopNG</span>
@@ -111,7 +110,7 @@ export default function Header({
               </div>
             )}
           </div>
-          
+
           <NavButton icon={Users} label="Community" page="community" />
         </nav>
 
@@ -181,16 +180,16 @@ export default function Header({
         <div className="md:hidden border-t bg-white p-4 space-y-2">
           <NavButton icon={Home} label="Home" page="home" />
           <NavButton icon={Store} label="Store" page="store" />
-          
+          <NavButton icon={Store} label="Discount Store" page="mini" />
+
           {/* ExtraCoop Mobile Dropdown */}
           <div>
             <button
               onClick={() => setShowExtraCoopMenu(!showExtraCoopMenu)}
-              className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-all duration-300 ${
-                currentPage === 'extracoop' 
-                  ? 'bg-green-600 text-white scale-105' 
+              className={`w-full flex items-center justify-between px-4 py-2 rounded-lg transition-all duration-300 ${currentPage === 'extracoop'
+                  ? 'bg-green-600 text-white scale-105'
                   : 'hover:bg-green-100 text-gray-700'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-2">
                 <Award size={20} />
@@ -198,7 +197,7 @@ export default function Header({
               </div>
               <ChevronDown size={16} className={`transition-transform ${showExtraCoopMenu ? 'rotate-180' : ''}`} />
             </button>
-            
+
             {showExtraCoopMenu && (
               <div className="mt-2 ml-8 space-y-1">
                 <button
@@ -237,9 +236,9 @@ export default function Header({
               </div>
             )}
           </div>
-          
+
           <NavButton icon={Users} label="Community" page="community" />
-          
+
           {isAuth ? (
             <button
               onClick={() => {
